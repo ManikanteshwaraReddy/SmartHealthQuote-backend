@@ -1,0 +1,6 @@
+age,gender,location,occupation,medical_history,pre_existing_conditions,lifestyle,smoking_tobacco_use,alcohol_consumption,exercise_frequency,plan_type,sum_insured,premium_inr
+25,Male,Mumbai,Software Engineer,No major issues,None,Active,No,Occasional,Daily,Individual,500000,12000
+35,Female,Delhi,Doctor,Migraine history,Diabetes,Moderate,No,Never,3 times a week,Family,1000000,28000
+28,Male,Bangalore,Consultant,Good health,None,Very Active,No,Social,Daily,Individual,750000,15000
+42,Female,Chennai,Teacher,Hypertension,High BP,Sedentary,No,Never,Weekly,Family,800000,35000
+30,Male,Pune,Manager,No issues,None,Active,No,Moderate,4 times a week,Individual,600000,14500
