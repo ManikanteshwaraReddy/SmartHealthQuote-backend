@@ -1,6 +1,5 @@
-# SmartHealthQuote-backend
-
-# Backend - SmartHealthQuote
+# SmartHealthQuote
+## Backend:
 
 Flask backend providing health insurance quote API using RAG (Retrieval-Augmented Generation) with Ollama and FAISS.
 
