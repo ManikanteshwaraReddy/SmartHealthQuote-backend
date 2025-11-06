@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 # SmartHealthQuote
 ## Backend:
+=======
+# Backend - SmartHealthQuote
+>>>>>>> 63441b0 (cost matrix included)
 
 Flask backend providing health insurance quote API using RAG (Retrieval-Augmented Generation) with Ollama and FAISS.
 
@@ -45,15 +49,27 @@ cp .env.example .env
 
 ### 4. Data Ingestion
 
+<<<<<<< HEAD
 ```bash
 # Ingest CSV data to build FAISS index
 python backend/scripts/ingest.py --csv backend/data/health_insurance_1part_4.csv --out backend/index
+=======
+Windows PowerShell example:
+
+```powershell
+# Ingest CSV data to build FAISS index
+python backend\scripts\ingest.py --csv backend\data\sample_insurance.csv --out backend\index
+
+# Verify RAG index status (run server first as shown below)
+curl http://localhost:8000/rag/status
+>>>>>>> 63441b0 (cost matrix included)
 ```
 
 This creates:
 - `backend/index/faiss.index` - FAISS vector index
 - `backend/index/meta.json` - Document metadata
 
+<<<<<<< HEAD
 ### 5. Start the API Server
 
 ```bash
@@ -61,6 +77,23 @@ This creates:
 python -m backend.app.main
 
 # Production mode with gunicorn
+=======
+CSV template: `backend/data/sample_insurance.csv`
+
+If your CSV has different columns, you can adjust `backend/scripts/ingest.py` in `build_text_representation` to include the fields you care about. The script is tolerant of missing columns.
+
+### 5. Start the API Server
+
+```powershell
+# Development mode
+python -m backend.app.main
+
+# Then, check health and RAG status in another PowerShell window:
+curl http://localhost:8000/health
+curl http://localhost:8000/rag/status
+
+# Production mode with gunicorn (optional)
+>>>>>>> 63441b0 (cost matrix included)
 gunicorn -c gunicorn.conf.py backend.app.main:app
 ```
 
@@ -72,7 +105,11 @@ GET /health
 ```
 Returns: `{"status": "ok"}`
 
+<<<<<<< HEAD
 ### Quote Generation
+=======
+### Quote Amount Calculation
+>>>>>>> 63441b0 (cost matrix included)
 ```bash
 POST /api/quote
 Content-Type: application/json
@@ -81,7 +118,10 @@ Content-Type: application/json
   "age": 30,
   "gender": "Male",
   "location": "Mumbai",
+<<<<<<< HEAD
   "occupation": "Software Engineer",
+=======
+>>>>>>> 63441b0 (cost matrix included)
   "numberOfInsuredMembers": 2,
   "preExistingConditions": "None",
   "smokingTobaccoUse": "No",
@@ -90,17 +130,29 @@ Content-Type: application/json
 }
 ```
 
+<<<<<<< HEAD
 Returns structured quote with:
 - Plan details (name, premium, sum insured, etc.)
 - Coverage details
 - Rationale based on similar cases
 - Retrieved context examples
+=======
+Returns:
+```json
+{ "totalPayableINR": 14230.0 }
+```
+>>>>>>> 63441b0 (cost matrix included)
 
 ## Models
 
 ### Ollama Models
+<<<<<<< HEAD
 - **Generation**: `mistral` (configurable via `GEN_MODEL`)
 - **Embeddings**: `all-minilm` → maps to `all-MiniLM-L6-v2` sentence transformer (configurable via `EMBEDDING_MODEL`)
+=======
+- **Generation**: `mistral` (configurable via `GEN_MODEL`) — used optionally to refine amount and ensure consistent formatting
+- **Embeddings**: `all-minilm` or `nomic-embed-text` (configurable via `EMBEDDING_MODEL`) — used only for RAG ingestion; not required for amount-only responses
+>>>>>>> 63441b0 (cost matrix included)
 
 ### FAISS Index
 - **Similarity**: Inner product on L2-normalized vectors (equivalent to cosine similarity)
@@ -116,6 +168,10 @@ Environment variables (see `.env.example`):
 - `INDEX_DIR`: Directory for FAISS index files (default: backend/index)
 - `CORS_ORIGINS`: Allowed CORS origins (comma-separated)
 - `TOP_K`: Number of similar examples to retrieve (default: 8)
+<<<<<<< HEAD
+=======
+- `USE_LLM_FOR_AMOUNT`: When true, uses LLM to output only `{ "totalPayableINR": number }` around the cost-matrix baseline. When false, returns baseline directly.
+>>>>>>> 63441b0 (cost matrix included)
 
 ## Development
 
@@ -157,4 +213,8 @@ docker build -t smarthealth-backend .
 docker run -p 8000:8000 -e OLLAMA_BASE_URL=http://host.docker.internal:11434 smarthealth-backend
 ```
 
+<<<<<<< HEAD
 Note: Adjust `OLLAMA_BASE_URL` to point to Ollama server accessible from container.
+=======
+Note: Adjust `OLLAMA_BASE_URL` to point to Ollama server accessible from container.
+>>>>>>> 63441b0 (cost matrix included)

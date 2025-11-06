@@ -18,14 +18,28 @@ class EmbeddingClient:
         embeddings = []
         
         for text in texts:
-            response = requests.post(
-                f"{self.base_url}/api/embeddings",
-                json={
-                    "model": self.model,
-                    "prompt": text
-                },
-                timeout=30
-            )
+            try:
+                response = requests.post(
+                    f"{self.base_url}/api/embeddings",
+                    json={
+                        "model": self.model,
+                        "prompt": text
+                    },
+                    timeout=30
+                )
+            except requests.exceptions.RequestException as e:
+                raise RuntimeError(
+                    f"Failed to reach Ollama embeddings endpoint at {self.base_url}/api/embeddings. "
+                    f"Ensure Ollama is running and accessible. Original error: {e}"
+                ) from e
+
+            # Provide clearer guidance if the server doesn't support embeddings
+            if response.status_code == 404:
+                raise RuntimeError(
+                    "Ollama server returned 404 for /api/embeddings. Your Ollama version may not support embeddings, "
+                    "or the endpoint is disabled. Please upgrade Ollama and pull an embeddings model (e.g., `ollama pull all-minilm` or `ollama pull nomic-embed-text`)."
+                )
+
             response.raise_for_status()
             
             embedding = np.array(response.json()["embedding"], dtype=np.float32)

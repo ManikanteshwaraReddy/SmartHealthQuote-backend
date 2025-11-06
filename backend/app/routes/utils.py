@@ -2,7 +2,10 @@ import os
 from ..models.schemas import QuoteRequest
 from ..services.embedding import EmbeddingClient
 from ..services.llm import LLMClient
-from ..services.rag import RagIndex
+
+# NOTE: We import RagIndex lazily inside get_rag to avoid hard dependency on faiss
+# at app import time (useful on platforms where faiss is unavailable). This lets
+# the API run and still generate default quotes without RAG.
 
 _RAG = None
 _EMB = None
@@ -20,16 +23,34 @@ def get_llm() -> LLMClient:
         _LLM = LLMClient()
     return _LLM
 
-def get_rag() -> RagIndex:
+def get_rag():
+    """Return a RagIndex instance if available, else None.
+
+    This function tolerates environments without FAISS or missing index files.
+    """
     global _RAG
-    if _RAG is None:
-        idx_dir = os.getenv("INDEX_DIR", "backend/index")
-        index_path = os.path.join(idx_dir, "faiss.index")
-        meta_path = os.path.join(idx_dir, "meta.json")
+    if _RAG is not None:
+        return _RAG
+
+    idx_dir = os.getenv("INDEX_DIR", "backend/index")
+    index_path = os.path.join(idx_dir, "faiss.index")
+    meta_path = os.path.join(idx_dir, "meta.json")
+
+    try:
+        # Lazy import here so the app can run without faiss installed.
+        from ..services.rag import RagIndex  # type: ignore
         rag = RagIndex()
         rag.load(index_path, meta_path)
         _RAG = rag
-    return _RAG
+        return _RAG
+    except FileNotFoundError:
+        # Index not built yet; return None to allow non-RAG flow.
+        _RAG = None
+        return None
+    except Exception:
+        # Any other error (including ImportError for faiss) — proceed without RAG.
+        _RAG = None
+        return None
 
 def build_query_text(req: QuoteRequest) -> str:
     parts = []

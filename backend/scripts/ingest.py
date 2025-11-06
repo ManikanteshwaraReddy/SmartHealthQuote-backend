@@ -56,12 +56,15 @@ def build_text_representation(row) -> str:
     
     return "; ".join(parts) if parts else "Insurance record"
 
-def ingest_csv(csv_path: str, output_dir: str) -> None:
+def ingest_csv(csv_path: str, output_dir: str, limit: int | None = None) -> None:
     """Ingest CSV file and create FAISS index"""
     
     # Load CSV
     print(f"Loading CSV from: {csv_path}")
     df = pd.read_csv(csv_path)
+    if limit is not None and limit > 0:
+        print(f"Limiting to first {limit} rows for ingestion preview")
+        df = df.head(limit)
     print(f"Loaded {len(df)} records")
     
     # Initialize services
@@ -124,6 +127,7 @@ def main():
     parser = argparse.ArgumentParser(description="Ingest CSV and build FAISS index")
     parser.add_argument("--csv", required=True, help="Path to CSV file")
     parser.add_argument("--out", required=True, help="Output directory for index files")
+    parser.add_argument("--limit", type=int, default=None, help="Optional: only ingest first N rows for a quick test")
     
     args = parser.parse_args()
     
@@ -132,10 +136,15 @@ def main():
         sys.exit(1)
     
     try:
-        ingest_csv(args.csv, args.out)
+        ingest_csv(args.csv, args.out, limit=args.limit)
         print("Ingestion completed successfully!")
     except Exception as e:
         print(f"Error during ingestion: {e}")
+        print("\nTroubleshooting:")
+        print("- Ensure Ollama is running and accessible at OLLAMA_BASE_URL (default http://localhost:11434)")
+        print("- Upgrade Ollama if /api/embeddings returns 404: https://ollama.ai")
+        print("- Pull an embeddings model, e.g.: `ollama pull all-minilm` or `ollama pull nomic-embed-text`")
+        print("- Try a quick smoke test with a small subset: --limit 100")
         sys.exit(1)
 
 if __name__ == "__main__":

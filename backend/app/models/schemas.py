@@ -53,3 +53,10 @@ class QuoteResponse(BaseModel):
     coverageDetails: list[str]
     rationale: str
     basedOnExamples: list[RetrievedContext]
+
+class QuoteAmountResponse(BaseModel):
+    totalPayableINR: float
+    yearlyINR: float | None = None
+    halfYearlyINR: float | None = None
+    quarterlyINR: float | None = None
+    monthlyINR: float | None = None

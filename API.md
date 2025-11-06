@@ -19,13 +19,39 @@ Check if the API server is running.
 }
 ```
 
-### Generate Insurance Quote
+### RAG Index Status
+
+**GET** `/rag/status`
+
+Report whether the FAISS index is loaded and return basic statistics.
+
+Possible responses:
+
+Loaded:
+```json
+{
+  "status": "loaded",
+  "total_vectors": 123,
+  "dimension": 384,
+  "metadata_count": 123
+}
+```
+
+Not ready:
+```json
+{
+  "status": "not_ready",
+  "message": "RAG index not loaded. Ensure FAISS is installed and the index files exist (see INDEX_DIR)."
+}
+```
+
+### Calculate Total Payable Amount
 
 **POST** `/api/quote`
 
-Generate a personalized health insurance quote based on user profile and similar cases.
+Return only the total payable annual premium in INR, computed via a cost-matrix baseline and optionally refined by an LLM.
 
-**Request Body:**
+**Request Body (examples, fields optional):**
 ```json
 {
   "age": 30,
@@ -55,38 +81,7 @@ Generate a personalized health insurance quote based on user profile and similar
 
 **Response:**
 ```json
-{
-  "planName": "Comprehensive Family Health Plan",
-  "premiumINR": 18500.0,
-  "sumInsured": 1000000,
-  "policyTermYears": 20,
-  "paymentMode": "Yearly",
-  "deductibleINR": 5000.0,
-  "coinsurancePercent": 10.0,
-  "coverageDetails": [
-    "Hospitalization coverage up to sum insured",
-    "Pre and post hospitalization expenses",
-    "Day care procedures",
-    "Ambulance charges",
-    "Maternity benefits",
-    "Preventive health check-ups"
-  ],
-  "rationale": "Based on your age (30), family size (2 members), and desired coverage (₹10L), this plan offers comprehensive coverage suitable for a young family. The premium is competitive considering no pre-existing conditions and healthy lifestyle.",
-  "basedOnExamples": [
-    {
-      "id": 1,
-      "score": 0.87,
-      "snippet": "Age: 28; Gender: Female; Location: Delhi; Family size: 2; Plan type: Family; Sum insured: ₹1000000; Premium: ₹18500",
-      "premium_inr": 18500.0
-    },
-    {
-      "id": 3,
-      "score": 0.82,
-      "snippet": "Age: 32; Gender: Male; Location: Mumbai; Family size: 2; Plan type: Family; Sum insured: ₹800000; Premium: ₹16800",
-      "premium_inr": 16800.0
-    }
-  ]
-}
+{ "totalPayableINR": 18500.0 }
 ```
 
 ## Error Responses
@@ -102,7 +97,7 @@ All errors return appropriate HTTP status codes with JSON error details:
 
 Common errors:
 - `400 Bad Request`: Invalid request data
-- `500 Internal Server Error`: Server-side issues (Ollama not available, index not found, etc.)
+- `500 Internal Server Error`: Server-side issues (e.g., Ollama connection when USE_LLM_FOR_AMOUNT=true)
 
 ## Field Mappings
 
