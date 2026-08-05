@@ -42,6 +42,22 @@ class RetrievedContext(BaseModel):
     snippet: str
     premium_inr: Optional[float] = None
 
+
+class QuoteRecommendation(BaseModel):
+    planName: str
+    premiumINR: float
+    sumInsured: Optional[int] = None
+    policyTermYears: Optional[int] = None
+    paymentMode: Optional[str] = None
+    deductibleINR: Optional[float] = None
+    coinsurancePercent: Optional[float] = None
+    coverageDetails: list[str] = []
+    rationale: str
+    basedOnExamples: list[RetrievedContext] = []
+
+class RetrievalResult(BaseModel):
+    status: Literal["used", "not_available", "failed"]
+    matches: list[RetrievedContext] = []
 class QuoteResponse(BaseModel):
     planName: str
     premiumINR: float
@@ -60,3 +76,5 @@ class QuoteAmountResponse(BaseModel):
     halfYearlyINR: float | None = None
     quarterlyINR: float | None = None
     monthlyINR: float | None = None
+    recommendation: Optional[QuoteRecommendation] = None
+    retrieval: Optional[RetrievalResult] = None
