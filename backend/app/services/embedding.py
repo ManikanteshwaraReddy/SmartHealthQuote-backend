@@ -195,7 +195,7 @@ class EmbeddingClient:
     """
 
     def __init__(self):
-        provider = os.getenv("EMBEDDING_PROVIDER", "local").lower().strip()
+        provider = os.getenv("EMBEDDING_PROVIDER", "voyage").lower().strip()
         if provider == "ollama":
             self._backend = _OllamaEmbeddingBackend()
         elif provider == "local":
