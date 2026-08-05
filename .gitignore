@@ -13,5 +13,5 @@ venv/
 .DS_Store
 
 # Index / data (generated or local)
-backend/index/
-backend/data/
+# backend/index/
+# backend/data/

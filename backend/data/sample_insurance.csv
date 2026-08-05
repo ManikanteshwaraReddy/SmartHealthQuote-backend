@@ -1,0 +1,4 @@
+Age,Gender,Location,Occupation,Number_of_Insured_Members,Family_Details,Pre_existing_Conditions,Past_Medical_History,Family_Medical_History,Height_cm,Weight_kg,Pregnancy_Status,Smoking_Tobacco_Use,Alcohol_Consumption,Exercise_Frequency,Plan_Type,Sum_Insured,Policy_Term_Years,Premium_Payment_Mode,Premium_INR
+30,Male,Mumbai,Software Engineer,2,Married with spouse,None,None,Diabetes in family,175,70,,No,Occasional,Regular,Family,1000000,20,Yearly,18500
+45,Female,Delhi,Teacher,3,Family with 1 child,Hypertension,Appendicitis,Hypertension in family,162,68,No,No,Never,Occasional,Family,800000,15,Half-Yearly,22000
+28,Male,Bengaluru,Analyst,1,Single,None,None,None,180,75,,No,Occasional,Regular,Individual,500000,10,Yearly,14000
