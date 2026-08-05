@@ -51,8 +51,8 @@ def create_app() -> Flask:
     # ── CORS ────────────────────────────────────────────────────────────────
     CORS(
         app,
-        resources={r"/api/*": {"origins": Config.CORS_ORIGINS, "supports_credentials": True},
-                   r"/auth/*": {"origins": Config.CORS_ORIGINS, "supports_credentials": True}},
+        resources={r"/*": {"origins": Config.CORS_ORIGINS}},
+        supports_credentials=True,
     )
 
     # ── Rate limiter ─────────────────────────────────────────────────────────
