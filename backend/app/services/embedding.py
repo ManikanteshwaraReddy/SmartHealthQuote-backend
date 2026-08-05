@@ -121,6 +121,69 @@ class _OllamaEmbeddingBackend:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Voyage AI backend
+# ─────────────────────────────────────────────────────────────────────────────
+
+class _VoyageEmbeddingBackend:
+    """Embedding backend using Voyage AI API."""
+
+    def __init__(self):
+        import voyageai
+        
+        self.api_key = os.getenv("VOYAGE_API_KEY")
+        if not self.api_key:
+            logger.warning("VOYAGE_API_KEY not found in environment!")
+            
+        self.client = voyageai.Client(api_key=self.api_key)
+        self.model = os.getenv("EMBEDDING_MODEL", "voyage-3-lite")
+        logger.info("Voyage embedding backend initialised (model=%s)", self.model)
+
+    def embed_text(self, text: str) -> np.ndarray:
+        return self.embed_texts([text])[0]
+
+    def embed_texts(self, texts: List[str]) -> List[np.ndarray]:
+        import time
+        
+        embeddings = []
+        # Voyage AI typically supports batching up to 128 documents per request
+        batch_size = 120
+        
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i:i + batch_size]
+            
+            # Retry logic for rate limits
+            max_retries = 5
+            for attempt in range(max_retries):
+                try:
+                    result = self.client.embed(
+                        batch_texts,
+                        model=self.model
+                    )
+                    break
+                except Exception as e:
+                    if "429" in str(e) or "Rate limit" in str(e):
+                        if attempt == max_retries - 1:
+                            raise
+                        logger.warning(f"Rate limited by Voyage API. Retrying in {2 ** attempt}s...")
+                        time.sleep(2 ** attempt)
+                    else:
+                        raise
+            
+            for raw_emb in result.embeddings:
+                emb = np.array(raw_emb, dtype=np.float32)
+                # L2 normalize
+                norm = np.linalg.norm(emb)
+                if norm > 0:
+                    emb = emb / norm
+                embeddings.append(emb)
+                
+            # Add a small delay between batches
+            time.sleep(0.1)
+            
+        return embeddings
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Public factory — same class name so callers don't change
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -137,9 +200,11 @@ class EmbeddingClient:
             self._backend = _OllamaEmbeddingBackend()
         elif provider == "local":
             self._backend = _LocalEmbeddingBackend()
+        elif provider == "voyage":
+            self._backend = _VoyageEmbeddingBackend()
         else:
             raise ValueError(
-                f"Unknown EMBEDDING_PROVIDER '{provider}'. Use 'local' or 'ollama'."
+                f"Unknown EMBEDDING_PROVIDER '{provider}'. Use 'voyage', 'local', or 'ollama'."
             )
         logger.info("EmbeddingClient ready (provider=%s)", provider)
 

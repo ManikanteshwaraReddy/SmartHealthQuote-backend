@@ -69,11 +69,17 @@ class Config:
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     GEN_MODEL: str = os.getenv("GEN_MODEL", "mistral")
 
-    # ------------------------------------------------------------------ #
-    # Embedding Provider: "local" (sentence-transformers) or "ollama"
-    # ------------------------------------------------------------------ #
-    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "local")
-    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+    # -- Embeddings --
+    # Options: "local", "ollama", "voyage"
+    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "voyage")
+    
+    # Provider-specific models
+    # "voyage-3-lite" for voyage
+    # "all-MiniLM-L6-v2" for local
+    # "all-minilm" for ollama
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "voyage-3-lite")
+    
+    VOYAGE_API_KEY: str = os.getenv("VOYAGE_API_KEY", "")
 
     # ------------------------------------------------------------------ #
     # RAG
