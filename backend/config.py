@@ -57,11 +57,27 @@ class Config:
     RATELIMIT_STORAGE_URI: str = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
 
     # ------------------------------------------------------------------ #
-    # RAG / AI
+    # LLM Provider: "groq" (cloud, default) or "ollama" (local fallback)
     # ------------------------------------------------------------------ #
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "groq")
+
+    # Groq settings (used when LLM_PROVIDER=groq)
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+    # Ollama settings (used when LLM_PROVIDER=ollama)
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     GEN_MODEL: str = os.getenv("GEN_MODEL", "mistral")
-    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "all-minilm")
+
+    # ------------------------------------------------------------------ #
+    # Embedding Provider: "local" (sentence-transformers) or "ollama"
+    # ------------------------------------------------------------------ #
+    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "local")
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+
+    # ------------------------------------------------------------------ #
+    # RAG
+    # ------------------------------------------------------------------ #
     INDEX_DIR: str = os.getenv("INDEX_DIR", "backend/index")
     TOP_K: int = int(os.getenv("TOP_K", "8"))
     USE_LLM_FOR_AMOUNT: bool = os.getenv("USE_LLM_FOR_AMOUNT", "true").lower() in (

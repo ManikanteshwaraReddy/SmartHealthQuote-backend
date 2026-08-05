@@ -3,8 +3,8 @@
 
 Flask backend that calculates health insurance total payable amount, with:
 - Cost-matrix baseline (deterministic, fast)
-- Optional LLM refinement for the final number (Ollama)
-- Optional RAG ingestion (FAISS) for future retrieval use-cases
+- Optional LLM refinement for the final number (Groq cloud or Ollama local)
+- Optional RAG ingestion (FAISS) for retrieval-augmented recommendations
 
 ## Setup
 
@@ -17,11 +17,22 @@ pip install -r requirements.txt
 
 ### 2) Environment variables
 Copy `.env.example` to `.env` and adjust if needed:
-- OLLAMA_BASE_URL (default http://localhost:11434)
-- GEN_MODEL (default mistral) — used only if USE_LLM_FOR_AMOUNT=true
-- EMBEDDING_MODEL (e.g., all-minilm or nomic-embed-text) — only needed for RAG ingestion
-- INDEX_DIR (default backend/index)
-- USE_LLM_FOR_AMOUNT (true/false)
+
+**LLM Provider** (`LLM_PROVIDER`):
+| Value    | Description                        | Required vars                              |
+|----------|------------------------------------|--------------------------------------------|
+| `groq`   | Groq cloud API (default)           | `GROQ_API_KEY`, `GROQ_MODEL`               |
+| `ollama` | Local Ollama instance              | `OLLAMA_BASE_URL`, `GEN_MODEL`             |
+
+**Embedding Provider** (`EMBEDDING_PROVIDER`):
+| Value    | Description                                    | Required vars        |
+|----------|------------------------------------------------|----------------------|
+| `local`  | sentence-transformers (default, no API key)     | `EMBEDDING_MODEL`    |
+| `ollama` | Local Ollama embeddings                         | `OLLAMA_BASE_URL`, `EMBEDDING_MODEL` |
+
+Other settings:
+- `INDEX_DIR` (default `backend/index`)
+- `USE_LLM_FOR_AMOUNT` (`true`/`false`) — whether to refine the cost-matrix amount with the LLM
 
 ### 3) Start the API
 ```powershell
@@ -36,6 +47,25 @@ If you plan to use retrieval features later:
 ```powershell
 python backend\scripts\ingest.py --csv backend\data\sample_insurance.csv --out backend\index
 curl http://localhost:8000/rag/status
+```
+
+## Switching between Groq and Ollama
+
+**For cloud deployment (e.g., Render):**
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama-3.3-70b-versatile
+EMBEDDING_PROVIDER=local
+```
+
+**For local development with Ollama:**
+```env
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+GEN_MODEL=mistral
+EMBEDDING_PROVIDER=ollama
+EMBEDDING_MODEL=all-minilm
 ```
 
 ## API
@@ -78,7 +108,7 @@ Response:
 Notes:
 - `totalPayableINR` corresponds to the selected `premiumPaymentMode` (or Yearly if absent).
 - Per-term fields are always included so you can display all options.
-- When `USE_LLM_FOR_AMOUNT=true`, the final number is minimally adjusted by the LLM around the cost-matrix baseline; otherwise it’s purely cost-matrix.
+- When `USE_LLM_FOR_AMOUNT=true`, the final number is minimally adjusted by the LLM around the cost-matrix baseline; otherwise it's purely cost-matrix.
 
 ## CSV format (for optional RAG ingestion)
 Common columns (script is tolerant to missing ones):
@@ -92,6 +122,17 @@ Common columns (script is tolerant to missing ones):
 ## Docker (optional)
 ```bash
 docker build -t smarthealth-backend .
-docker run -p 8000:8000 -e OLLAMA_BASE_URL=http://host.docker.internal:11434 smarthealth-backend
+docker run -p 8000:8000 \
+  -e LLM_PROVIDER=groq \
+  -e GROQ_API_KEY=gsk_... \
+  smarthealth-backend
 ```
-Note: Ensure the container can reach your Ollama host if LLM use is enabled.
+
+For local Ollama via Docker:
+```bash
+docker run -p 8000:8000 \
+  -e LLM_PROVIDER=ollama \
+  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
+  smarthealth-backend
+```
+Note: Ensure the container can reach your Ollama host if using the Ollama provider.

@@ -6,16 +6,32 @@ CSV ingestion script to build FAISS index for RAG.
 import os
 import sys
 import argparse
+import importlib.util
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Add backend to Python path to import our modules
+# Load .env from project root so EMBEDDING_PROVIDER etc. are available
+project_root = Path(__file__).parent.parent.parent
+load_dotenv(project_root / ".env")
+
+# Direct imports to avoid triggering app/__init__.py (which requires Flask)
 backend_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(backend_dir))
 
-from app.services.embedding import EmbeddingClient
-from app.services.rag import RagIndex
+def _import_module_from_file(module_name: str, file_path: Path):
+    """Import a module directly from its file path, bypassing package __init__."""
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+embedding_mod = _import_module_from_file("embedding", backend_dir / "app" / "services" / "embedding.py")
+rag_mod = _import_module_from_file("rag", backend_dir / "app" / "services" / "rag.py")
+
+EmbeddingClient = embedding_mod.EmbeddingClient
+RagIndex = rag_mod.RagIndex
 
 def build_text_representation(row) -> str:
     """Build a text representation of an insurance record for embedding"""
@@ -141,9 +157,10 @@ def main():
     except Exception as e:
         print(f"Error during ingestion: {e}")
         print("\nTroubleshooting:")
-        print("- Ensure Ollama is running and accessible at OLLAMA_BASE_URL (default http://localhost:11434)")
-        print("- Upgrade Ollama if /api/embeddings returns 404: https://ollama.ai")
-        print("- Pull an embeddings model, e.g.: `ollama pull all-minilm` or `ollama pull nomic-embed-text`")
+        print("- Check EMBEDDING_PROVIDER in .env (default: 'local' for sentence-transformers)")
+        print("- For local: ensure sentence-transformers is installed: pip install sentence-transformers")
+        print("- For Ollama: ensure Ollama is running at OLLAMA_BASE_URL (default http://localhost:11434)")
+        print("  and pull an embeddings model, e.g.: `ollama pull all-minilm` or `ollama pull nomic-embed-text`")
         print("- Try a quick smoke test with a small subset: --limit 100")
         sys.exit(1)
 

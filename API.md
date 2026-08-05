@@ -97,7 +97,7 @@ All errors return appropriate HTTP status codes with JSON error details:
 
 Common errors:
 - `400 Bad Request`: Invalid request data
-- `500 Internal Server Error`: Server-side issues (e.g., Ollama connection when USE_LLM_FOR_AMOUNT=true)
+- `500 Internal Server Error`: Server-side issues (e.g., LLM provider connection failure when USE_LLM_FOR_AMOUNT=true)
 
 ## Field Mappings
 

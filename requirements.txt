@@ -15,6 +15,9 @@ requests==2.31.0
 numpy==1.26.0
 pandas==2.1.4
 faiss-cpu==1.8.0
+groq>=0.12.0
+tenacity>=8.2.0
+sentence-transformers>=2.2.0
 
 # Database
 pymongo==4.6.3
